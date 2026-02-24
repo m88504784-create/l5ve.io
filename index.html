@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>// SYSTEM_ULTRA_BOOT //</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon-green: #00ff41; --bg-dark: #000; --neon-blue: #03e9f4; }
+        body, html { margin: 0; padding: 0; background: var(--bg-dark); font-family: 'Noto Serif KR', serif; overflow: hidden; height: 100vh; color: var(--neon-green); }
+        
+        /* --- 🚀 새로운 고속 로딩 인트로 --- */
+        #intro-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: black; z-index: 5000; padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column;
+        }
+        #fast-log { 
+            flex-grow: 1; font-size: 10px; line-height: 1.2; overflow: hidden; 
+            color: rgba(0, 255, 65, 0.6); font-family: monospace; 
+        }
+        #ascii-logo {
+            font-family: monospace; font-size: 12px; white-space: pre;
+            text-align: center; color: var(--neon-green); display: none;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin: auto;
+        }
+
+        /* --- 기존 메인 터미널 스타일 유지 --- */
+        #noise-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; pointer-events: none; }
+        .noise-active { display: block !important; animation: glitch 0.1s infinite; }
+        @keyframes glitch { 0% { background: rgba(0,255,65,0.15); clip-path: inset(10% 0 80% 0); } 50% { background: rgba(0,40,0,0.2); clip-path: inset(50% 0 20% 0); } }
+        #matrix-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
+        #terminal { width: 650px; background: rgba(0, 15, 0, 0.95); border: 2px solid var(--neon-green); display: none; margin: auto; position: relative; box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+        .admin-header { background: rgba(0, 255, 65, 0.1); border-bottom: 1px solid var(--neon-green); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .auth-btn { background: var(--neon-green); border: none; color: #000; font-size: 10px; cursor: pointer; font-weight: bold; padding: 4px 10px; font-family: 'Noto Serif KR'; }
+        .logout-btn { background: #ff003c; color: white; }
+        .terminal-body { padding: 25px; }
+        nav { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; border-bottom: 1px dashed var(--neon-green); padding-bottom: 15px; }
+        .nav-link { cursor: pointer; font-weight: 700; color: var(--neon-green); }
+        #display-box { min-height: 220px; border-left: 2px solid var(--neon-green); padding: 10px 20px; outline: none; white-space: pre-wrap; line-height: 1.7; color: var(--neon-green); }
+        .edit-mode { background: rgba(0, 255, 65, 0.05); color: #fff !important; border-left-color: var(--neon-blue) !important; }
+        #save-btn { display: none; margin-top: 20px; width: 100%; background: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 10px; cursor: pointer; font-family: 'Noto Serif KR'; font-weight: 700; }
+        .shake { animation: shake 0.2s; }
+        @keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(-3px, 3px); } 100% { transform: translate(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div id="fast-log"></div>
+        <div id="ascii-logo">
+ ██████╗██╗   ██╗██████╗ ███████╗██████╗ 
+██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
+██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝
+██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗
+╚██████╗   ██║   ██████╔╝███████╗██║  ██║
+ ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝
+[ SYSTEM_VERSION_3.0_AUTHORIZED ]
+        </div>
+    </div>
+
+    <div id="noise-overlay"></div>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div id="terminal" style="margin: auto; margin-top: 10vh;">
+        <div class="admin-header">
+            <span id="auth-status" style="font-size: 11px; font-weight: 700;">[ STATUS: GUEST ]</span>
+            <div id="auth-controls" style="display: flex; gap: 8px;">
+                <input type="password" id="admin-pw" style="background:#000; border:1px solid var(--neon-green); color:var(--neon-green); width:70px; font-size:10px;" placeholder="CODE">
+                <button class="auth-btn" onclick="login()">LOGIN</button>
+            </div>
+        </div>
+        <div class="terminal-body">
+            <nav>
+                <span class="nav-link" onclick="view('home')">#_홈</span>
+                <span class="nav-link" onclick="view('data')">#_데이터</span>
+            </nav>
+            <div id="display-box" contenteditable="false"><span id="text-content"></span></div>
+            <button id="save-btn" onclick="save()">[ 데이터를 영구히 기록(SAVE) ]</button>
+        </div>
+    </div>
+
+    <script>
+        const MASTER_PW = "7777";
+        let IS_ADMIN = false;
+
+        // --- 🚀 고속 부팅 로직 ---
+        const fastLog = document.getElementById('fast-log');
+        const ascii = document.getElementById('ascii-logo');
+        const intro = document.getElementById('intro-overlay');
+
+        function runUltraIntro() {
+            let lineCount = 0;
+            const maxLines = 80; // 총 쏟아지는 줄 수
+
+            const interval = setInterval(() => {
+                const div = document.createElement('div');
+                div.innerText = `LOAD_FILE: /sys/kernel/node_${Math.random().toString(36).substr(2, 9)}.dat ... OK!`;
+                fastLog.appendChild(div);
+                fastLog.scrollTop = fastLog.scrollHeight;
+                lineCount++;
+
+                if (lineCount >= maxLines) {
+                    clearInterval(interval);
+                    fastLog.style.display = 'none';
+                    ascii.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        intro.style.display = 'none';
+                        document.getElementById('terminal').style.display = 'block';
+                        startMatrix(); view('home');
+                    }, 1500); // 로고 보여주는 시간
+                }
+            }, 20); // 0.02초마다 한 줄씩 (광속 로딩)
+        }
+
+        // --- 기존 기능 유지 ---
+        function login() {
+            if(document.getElementById('admin-pw').value === MASTER_PW) {
+                IS_ADMIN = true;
+                glitch();
+                document.getElementById('auth-status').innerText = "[ STATUS: ADMIN_ROOT ]";
+                document.getElementById('auth-status').style.color = "cyan";
+                document.getElementById('auth-controls').innerHTML = `<button class="auth-btn logout-btn" onclick="logout()">LOGOUT</button>`;
+            } else { glitch(); alert("인증 실패."); }
+        }
+
+        function logout() {
+            IS_ADMIN = false; glitch();
+            document.getElementById('auth-status').innerText = "[ STATUS: GUEST ]";
+            document.getElementById('auth-status').style.color = "var(--neon-green)";
+            document.getElementById('auth-controls').innerHTML = `<input type="password" id="admin-pw" style="background:#000; border:1px solid var(--neon-green); color:var(--neon-green); width:70px; font-size:10px;" placeholder="CODE"><button class="auth-btn" onclick="login()">LOGIN</button>`;
+            view('home');
+        }
+
+        function view(mode) {
+            glitch();
+            const target = document.getElementById('text-content');
+            const box = document.getElementById('display-box');
+            const saveBtn = document.getElementById('save-btn');
+            if(mode === 'home') {
+                target.innerText = "> 시스템 메인 게이트웨이...\n> 현재 위치: SEOUL_NODE_01";
+                box.contentEditable = false;
+                box.classList.remove('edit-mode');
+                saveBtn.style.display = 'none';
+            } else {
+                target.innerText = localStorage.getItem('my_secure_data') || "> [데이터 없음]";
+                if(IS_ADMIN) { box.contentEditable = true; box.classList.add('edit-mode'); saveBtn.style.display = 'block'; }
+            }
+        }
+
+        function save() {
+            if(!IS_ADMIN) return;
+            localStorage.setItem('my_secure_data', document.getElementById('text-content').innerText);
+            glitch(); alert("SAVED.");
+        }
+
+        function glitch() {
+            const noise = document.getElementById('noise-overlay');
+            noise.classList.add('noise-active');
+            setTimeout(() => noise.classList.remove('noise-active'), 200);
+        }
+
+        function startMatrix() {
+            const canvas = document.getElementById('matrix-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const drops = Array(Math.floor(canvas.width / 16)).fill(1);
+            setInterval(() => {
+                ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillStyle = "#0F0";
+                drops.forEach((y, i) => {
+                    ctx.fillText(String.fromCharCode(Math.random() * 128), i * 16, y * 16);
+                    if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+            }, 35);
+        }
+
+        window.onload = runUltraIntro;
+    </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
